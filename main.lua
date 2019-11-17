@@ -4,6 +4,7 @@ larguraTela = love.graphics.getWidth()
 alturaTela = love.graphics.getHeight()
 
 function love.load()
+    stop = false
 
     --fisica
     love.physics.setMeter(64)
@@ -29,6 +30,8 @@ function love.load()
     chao.fixture = love.physics.newFixture(chao.body, chao.shape)
     --chao
 
+
+    --Cat Fighter
     --catBody
         catBody = {}
         catBody.body = love.physics.newBody(mundo, larguraTela/2 - 100,alturaTela/2-100, "dynamic")
@@ -37,9 +40,9 @@ function love.load()
         catBody.fixture:setRestitution(0.2)
     --catBody
 
-    --Cat Fighter
     catFighterImagem = love.graphics.newImage("imagens/cat.png")
     catGrid = anim.newGrid(50,50, catFighterImagem:getWidth(), catFighterImagem:getHeight())
+    catDieAnimation = anim.newAnimation(catGrid('7-3',4),0.1)
     catAnimation = anim.newAnimation(catGrid('4-8',1),0.05)
     catFighter = {
         posx = catBody.body:getX() - 50,
@@ -47,9 +50,20 @@ function love.load()
         imagem = catFighterImagem,
         animation = catAnimation,
         vely = 0,
-        alturaPulo = 450
+        alturaPulo = 450,
+        estaVivo = true
     }
     --Cat Fighter
+
+    --robot
+    delayRobot = 5
+    tempoCriacaoRobot = delayRobot
+    robots = {}
+
+    robotImagem = love.graphics.newImage("imagens/robot.png")
+    robotGrid = anim.newGrid(105,105, robotImagem:getWidth(), robotImagem:getHeight())
+    robotAnimation = anim.newAnimation(robotGrid('1-9',5),0.25)
+    --robot
 end
 
 function love.update(dt)
@@ -59,6 +73,8 @@ function love.update(dt)
     catMovimento(dt)
     catFighter.posx = catBody.body:getX() - 50
     catFighter.posy = catBody.body:getY() - 50
+    criaRobot(dt)
+    colisao(dt)
 end
 
 function love.draw()
@@ -79,8 +95,23 @@ function love.draw()
 
 
     --Cat Animation
-    catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
+    if not stop then
+        if catFighter.estaVivo then
+            catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
+        else
+            catDieAnimation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
+            stop =true
+        end
+    else
+
+    end
     --Cat Animation
+
+    --robot
+    for i, robot in ipairs(robots)  do
+        robotAnimation:draw(robotImagem, robot.x, robot.y)
+    end
+    --robot
 end
 
 function catMovimento(dt)
@@ -98,6 +129,7 @@ function catMovimento(dt)
         if planoDeFundo.x2 < -larguraTela then
             planoDeFundo.x2 = larguraTela
         end
+        andaRobot(dt)
         catFighter.animation:update(dt)
     end 
     if love.keyboard.isDown('left') and catFighter.posx > 0 then
@@ -112,4 +144,38 @@ function love.keypressed(key)
     end
 end
 
+function criaRobot(dt)
+    tempoCriacaoRobot = tempoCriacaoRobot - dt
 
+    if tempoCriacaoRobot < 0 then
+        tempoCriacaoRobot = delayRobot
+        novoRobot = {x = larguraTela, y = alturaTela - 165, imagem = robotImagem}
+        table.insert(robots,novoRobot)
+    end
+    andaRobot(dt)
+end
+
+function andaRobot(dt)
+    for i, robot in ipairs(robots) do
+        robot.x = robot.x - 150*dt
+        robotAnimation:update(dt)
+        if robot.x < 0 - robotImagem:getWidth() then
+            table.remove(robots, i )
+        end
+    end
+end
+
+function checaColisao(x1,y1,w1,h1,x2,y2,w2,h2)
+    return x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1
+end
+
+function colisao(dt)
+    for i, robot in ipairs(robots) do
+        if catFighter.estaVivo and checaColisao(robot.x, robot.y, robotImagem:getWidth(), robotImagem:getHeight(), catBody.body:getX()- (catFighterImagem:getWidth()), catBody.body:getY(), catFighterImagem:getWidth(), catFighterImagem:getHeight())then
+            catFighter.estaVivo = false
+            catDieAnimation:update(dt)
+            --catBody.body:setX(catBody.body:getX() - planoDeFundo.vel*dt)
+            break
+        end
+    end
+end
