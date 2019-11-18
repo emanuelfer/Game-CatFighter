@@ -4,7 +4,6 @@ larguraTela = love.graphics.getWidth()
 alturaTela = love.graphics.getHeight()
 
 function love.load()
-    stop = false
 
     --fisica
     love.physics.setMeter(64)
@@ -59,11 +58,21 @@ function love.load()
     delayRobot = 5
     tempoCriacaoRobot = delayRobot
     robots = {}
+    robotExplosao = {
+        x=0,
+        y=0
+    }
 
     robotImagem = love.graphics.newImage("imagens/robot.png")
     robotGrid = anim.newGrid(105,105, robotImagem:getWidth(), robotImagem:getHeight())
     robotAnimation = anim.newAnimation(robotGrid('1-9',5),0.25)
     --robot
+
+        --fogo
+        fogoImagem = love.graphics.newImage("imagens/RobotFire.png")
+        fogoGrid = anim.newGrid(256, 300, fogoImagem:getWidth(), fogoImagem:getHeight())
+        fogoAnimation = anim.newAnimation(fogoGrid('1-8',1,'1-8',2,'1-8',3,'1-8',4,'1-8',5,'1-8',6,'1-1',7),0.05)
+        --fogo
 end
 
 function love.update(dt)
@@ -95,15 +104,10 @@ function love.draw()
 
 
     --Cat Animation
-    if not stop then
-        if catFighter.estaVivo then
-            catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
-        else
-            catDieAnimation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
-            stop =true
-        end
+    if catFighter.estaVivo then
+        catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
     else
-
+        catDieAnimation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
     end
     --Cat Animation
 
@@ -112,6 +116,13 @@ function love.draw()
         robotAnimation:draw(robotImagem, robot.x, robot.y)
     end
     --robot
+
+    --fogo
+    if not catFighter.estaVivo then
+        fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
+        catFighter.estaVivo = true
+    end
+    --fogo
 end
 
 function catMovimento(dt)
@@ -171,9 +182,14 @@ end
 
 function colisao(dt)
     for i, robot in ipairs(robots) do
-        if catFighter.estaVivo and checaColisao(robot.x, robot.y, robotImagem:getWidth(), robotImagem:getHeight(), catBody.body:getX()- (catFighterImagem:getWidth()), catBody.body:getY(), catFighterImagem:getWidth(), catFighterImagem:getHeight())then
+        print("robot.x " .. robot.x .. "width ".. robotImagem:getWidth(), "catBody.x " .. catBody.body:getX().. "width ".. catFighterImagem:getWidth())
+        if checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
+            print("morreu")
             catFighter.estaVivo = false
             catDieAnimation:update(dt)
+            robotExplosao.x = robot.x
+            robotExplosao.y = robot.y
+            fogoAnimation:update(dt)
             --catBody.body:setX(catBody.body:getX() - planoDeFundo.vel*dt)
             break
         end
