@@ -2,8 +2,19 @@ anim = require 'anim8'
 
 larguraTela = love.graphics.getWidth()
 alturaTela = love.graphics.getHeight()
+vidas = 3
 
 function love.load()
+    wait = false
+    waitTime = 0
+
+    gameOver = false
+    pontos = 0
+    coracao = love.graphics.newImage("imagens/vidas.png")
+
+    --fonte
+    fonte = love.graphics.newImageFont("imagens/Fonte.png", " abcdefghijklmnopqrstuvwxyz" .. "ABCDEFGHIJKLMNOPQRSTUVWXYZ".."0123456789.,!?-+/():;%&`´*#=[]")
+    --fonte
 
     --fisica
     love.physics.setMeter(64)
@@ -68,22 +79,37 @@ function love.load()
     robotAnimation = anim.newAnimation(robotGrid('1-9',5),0.25)
     --robot
 
-        --fogo
-        fogoImagem = love.graphics.newImage("imagens/RobotFire.png")
-        fogoGrid = anim.newGrid(256, 300, fogoImagem:getWidth(), fogoImagem:getHeight())
-        fogoAnimation = anim.newAnimation(fogoGrid('1-8',1,'1-8',2,'1-8',3,'1-8',4,'1-8',5,'1-8',6,'1-1',7),0.05)
-        --fogo
+    --fogo
+    fogoImagem = love.graphics.newImage("imagens/RobotFire.png")
+    fogoGrid = anim.newGrid(256, 300, fogoImagem:getWidth(), fogoImagem:getHeight())
+    fogoAnimation = anim.newAnimation(fogoGrid('1-8',1,'1-8',2,'1-8',3,'1-8',4,'1-8',5,'1-8',6,'1-1',7),0.01)
+    --fogo
 end
 
 function love.update(dt)
-    mundo:update(dt)
-    larguraTela = love.graphics.getWidth()
-    alturaTela = love.graphics.getHeight()
-    catMovimento(dt)
-    catFighter.posx = catBody.body:getX() - 50
-    catFighter.posy = catBody.body:getY() - 50
-    criaRobot(dt)
-    colisao(dt)
+    if not gameOver then
+        mundo:update(dt)
+        larguraTela = love.graphics.getWidth()
+        alturaTela = love.graphics.getHeight()
+        catMovimento(dt)
+        catFighter.posx = catBody.body:getX() - 50
+        catFighter.posy = catBody.body:getY() - 50
+        criaRobot(dt)
+
+        if wait then
+            catDieAnimation:update(dt)
+            fogoAnimation:update(dt)
+            waitTime = waitTime + dt
+            if waitTime > 0.5 then
+                colisao(dt)
+                wait = false
+                waitTime = 0
+            end
+        else
+            catFighter.estaVivo = true
+            colisao(dt)
+        end
+    end
 end
 
 function love.draw()
@@ -117,10 +143,19 @@ function love.draw()
     end
     --robot
 
-    --fogo
-    if not catFighter.estaVivo then
+    --pontuacao
+    love.graphics.setFont(fonte)
+    love.graphics.print("Pontuacao: ",10,10,0,1,1,0,2,0,0)
+    love.graphics.print(pontos, 105,15,0,1,1,5,5,0,0)
+    love.graphics.print("Vidas: ",larguraTela/2,15)
+    for i=1, vidas do
+        love.graphics.draw(coracao,  (larguraTela/2 + 20) + i*40, 10)
+    end
+    --pontuacao
+
+     --fogo
+     if not catFighter.estaVivo then
         fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
-        catFighter.estaVivo = true
     end
     --fogo
 end
@@ -182,15 +217,12 @@ end
 
 function colisao(dt)
     for i, robot in ipairs(robots) do
-        print("robot.x " .. robot.x .. "width ".. robotImagem:getWidth(), "catBody.x " .. catBody.body:getX().. "width ".. catFighterImagem:getWidth())
         if checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
-            print("morreu")
             catFighter.estaVivo = false
-            catDieAnimation:update(dt)
             robotExplosao.x = robot.x
             robotExplosao.y = robot.y
-            fogoAnimation:update(dt)
-            --catBody.body:setX(catBody.body:getX() - planoDeFundo.vel*dt)
+            vidas = vidas - 1
+            wait = true
             break
         end
     end
