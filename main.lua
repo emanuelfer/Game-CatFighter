@@ -95,20 +95,7 @@ function love.update(dt)
         catFighter.posx = catBody.body:getX() - 50
         catFighter.posy = catBody.body:getY() - 50
         criaRobot(dt)
-
-        if wait then
-            catDieAnimation:update(dt)
-            fogoAnimation:update(dt)
-            waitTime = waitTime + dt
-            if waitTime > 0.5 then
-                colisao(dt)
-                wait = false
-                waitTime = 0
-            end
-        else
-            catFighter.estaVivo = true
-            colisao(dt)
-        end
+        colisao(dt)
     end
 end
 
@@ -161,31 +148,33 @@ function love.draw()
 end
 
 function catMovimento(dt)
-    if love.keyboard.isDown('right') then
-        if catBody.body:getX() < larguraTela/2 - 50 then
-            catBody.body:setX(catBody.body:getX() + planoDeFundo.vel*dt)
-        end
+    if catFighter.estaVivo then
+        if love.keyboard.isDown('right') then
+            if catBody.body:getX() < larguraTela/2 - 50 then
+                catBody.body:setX(catBody.body:getX() + planoDeFundo.vel*dt)
+            end
 
-        planoDeFundo.x = planoDeFundo.x - planoDeFundo.vel*dt
-        planoDeFundo.x2 = planoDeFundo.x2 - planoDeFundo.vel*dt
+            planoDeFundo.x = planoDeFundo.x - planoDeFundo.vel*dt
+            planoDeFundo.x2 = planoDeFundo.x2 - planoDeFundo.vel*dt
 
-        if planoDeFundo.x < -larguraTela then
-            planoDeFundo.x = larguraTela
-        end
-        if planoDeFundo.x2 < -larguraTela then
-            planoDeFundo.x2 = larguraTela
-        end
-        andaRobot(dt)
-        catFighter.animation:update(dt)
-    end 
-    if love.keyboard.isDown('left') and catFighter.posx > 0 then
-        catBody.body:setX(catBody.body:getX() - planoDeFundo.vel*dt)
-        catFighter.animation:update(dt)
-    end 
+            if planoDeFundo.x < -larguraTela then
+                planoDeFundo.x = larguraTela
+            end
+            if planoDeFundo.x2 < -larguraTela then
+                planoDeFundo.x2 = larguraTela
+            end
+            andaRobot(dt)
+            catFighter.animation:update(dt)
+        end 
+        if love.keyboard.isDown('left') and catFighter.posx > 0 then
+            catBody.body:setX(catBody.body:getX() - planoDeFundo.vel*dt)
+            catFighter.animation:update(dt)
+        end  
+    end
 end
 
 function love.keypressed(key)
-    if key == 'space' and catBody.body:getY() > alturaTela-100 then
+    if key == 'space' and catBody.body:getY() > alturaTela-100 and catFighter.estaVivo then
         catBody.body:applyForce(0,-60000)
     end
 end
@@ -217,13 +206,23 @@ end
 
 function colisao(dt)
     for i, robot in ipairs(robots) do
-        if checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
+        if (not wait) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
             catFighter.estaVivo = false
-            robotExplosao.x = robot.x
-            robotExplosao.y = robot.y
             vidas = vidas - 1
             wait = true
             break
+        else
+            robotExplosao.x = robot.x
+            robotExplosao.y = robot.y
+            catDieAnimation:update(dt)
+            fogoAnimation:update(dt)
+            waitTime = waitTime + dt
+            if waitTime > 1.5 then
+                wait = false
+                waitTime = 0
+                catFighter.estaVivo = true
+            end
         end
+
     end
 end
