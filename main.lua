@@ -96,6 +96,7 @@ function love.update(dt)
         catFighter.posy = catBody.body:getY() - 50
         criaRobot(dt)
         colisao(dt)
+        pontuacao(dt)
     end
 end
 
@@ -133,7 +134,7 @@ function love.draw()
     --pontuacao
     love.graphics.setFont(fonte)
     love.graphics.print("Pontuacao: ",10,10,0,1,1,0,2,0,0)
-    love.graphics.print(pontos, 105,15,0,1,1,5,5,0,0)
+    love.graphics.print(pontos, 105,13,0,1,1,5,5,0,0)
     love.graphics.print("Vidas: ",larguraTela/2,15)
     for i=1, vidas do
         love.graphics.draw(coracao,  (larguraTela/2 + 20) + i*40, 10)
@@ -209,13 +210,21 @@ function colisao(dt)
         if (not wait) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
             catFighter.estaVivo = false
             vidas = vidas - 1
+            if pontos > 0 then
+                pontos = pontos - 1
+            end
+            robot.atacou = true
+            robot.verificado = true
             wait = true
             break
-        else
-            robotExplosao.x = robot.x
-            robotExplosao.y = robot.y
+        elseif wait then
+            if robot.atacou then
+                robotExplosao.x = robot.x
+                robotExplosao.y = robot.y
+            end
             catDieAnimation:update(dt)
             fogoAnimation:update(dt)
+            print(waitTime)
             waitTime = waitTime + dt
             if waitTime > 1.5 then
                 wait = false
@@ -226,3 +235,13 @@ function colisao(dt)
 
     end
 end
+
+function pontuacao(dt)
+    for i, robot in ipairs(robots) do
+        if catFighter.estaVivo and not robot.verificado and robot.x  < catFighter.posx then
+            pontos = pontos + 1 
+            robot.verificado = true
+        end
+    end
+end
+
