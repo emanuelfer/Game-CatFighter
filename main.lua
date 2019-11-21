@@ -4,6 +4,7 @@ larguraTela = love.graphics.getWidth()
 alturaTela = love.graphics.getHeight()
 
 pontos = 0
+telaInicial = true
 
 function love.load()
     wait = false
@@ -12,7 +13,7 @@ function love.load()
     vidas = 3
     coracao = love.graphics.newImage("imagens/vidas.png")
     gamerOver = false
-    pause = false
+    pause = true
 
     --fonte
     fonte = love.graphics.newImageFont("imagens/Fonte.png", " abcdefghijklmnopqrstuvwxyz" .. "ABCDEFGHIJKLMNOPQRSTUVWXYZ".."0123456789.,!?-+/():;%&`´*#=[]")
@@ -34,6 +35,7 @@ function love.load()
         vel = 200
     }
     gameOverBackground = love.graphics.newImage("imagens/GameOverBackground.png")
+    gameStartBackground = love.graphics.newImage("imagens/GameStartBackground.png")
     --background
 
     --chao
@@ -108,7 +110,7 @@ end
 
 function love.draw()
     love.graphics.setFont(fonte)
-    if not gamerOver then
+    if not gamerOver and not telaInicial then
         --chao
         love.graphics.polygon("fill", catBody.body:getWorldPoints(catBody.shape:getPoints()))
 
@@ -153,12 +155,14 @@ function love.draw()
             fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
         end
         --fogo
-    else
+    elseif not telaInicial then
         love.graphics.draw(gameOverBackground, 0,0,0,0.75,0.75)
         love.graphics.setBackgroundColor(176/255,224/255,230/255)
         love.graphics.print("Pontos: ".. pontos, larguraTela/2 -50, 50 ,0,1.5,1.5)
         love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
         love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-400, alturaTela/2 + deadCat:getHeight()/2 + 40, 0, 1.5, 1.5)
+    else
+        love.graphics.draw(gameStartBackground, -300,0)
     end
 end
 
@@ -201,6 +205,10 @@ function love.keypressed(key)
         gamerOver = false
         pause = false
         pontos = 0
+    end
+    if key == 'return' and telaInicial then
+        telaInicial = false
+        pause = false
     end
     if key == 'escape' then
         love.event.quit()
