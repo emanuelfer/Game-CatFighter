@@ -237,10 +237,6 @@ function colisao(dt)
         if (not wait) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
             catFighter.estaVivo = false
             vidas = vidas - 1
-            if pontos > 0 then
-                pontos = pontos - 1
-            end
-
             robot.atacou = true
             robot.verificado = true
             wait = true
@@ -266,7 +262,7 @@ end
 
 function pontuacao(dt)
     for i, robot in ipairs(robots) do
-        if catFighter.estaVivo and not robot.verificado and robot.x  < catFighter.posx then
+        if catFighter.estaVivo and not robot.verificado and not robot.atacou and robot.x + 105/2  < catFighter.posx then
             pontos = pontos + 1 
             robot.verificado = true
         end
