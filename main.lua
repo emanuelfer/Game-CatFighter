@@ -2,15 +2,17 @@ anim = require 'anim8'
 
 larguraTela = love.graphics.getWidth()
 alturaTela = love.graphics.getHeight()
-vidas = 3
 
 function love.load()
     wait = false
     waitTime = 0
 
-    gameOver = false
-    pontos = 0
+    vidas = 3
     coracao = love.graphics.newImage("imagens/vidas.png")
+    gamerOver = false
+    pause = false
+    pontos = 0
+    
 
     --fonte
     fonte = love.graphics.newImageFont("imagens/Fonte.png", " abcdefghijklmnopqrstuvwxyz" .. "ABCDEFGHIJKLMNOPQRSTUVWXYZ".."0123456789.,!?-+/():;%&`´*#=[]")
@@ -63,6 +65,8 @@ function love.load()
         alturaPulo = 450,
         estaVivo = true
     }
+
+    deadCat = love.graphics.newImage("imagens/SadCat.png")
     --Cat Fighter
 
     --robot
@@ -87,7 +91,7 @@ function love.load()
 end
 
 function love.update(dt)
-    if not gameOver then
+    if not pause then
         mundo:update(dt)
         larguraTela = love.graphics.getWidth()
         alturaTela = love.graphics.getHeight()
@@ -97,55 +101,62 @@ function love.update(dt)
         criaRobot(dt)
         colisao(dt)
         pontuacao(dt)
+        gameOver(dt)
     end
 end
 
 function love.draw()
-    --chao
-    love.graphics.polygon("fill", catBody.body:getWorldPoints(catBody.shape:getPoints()))
-
-    --chao
-
-    --catBody
-    love.graphics.polygon("fill", chao.body:getWorldPoints(chao.shape:getPoints()))
-
-    --catBody
-
-    --background
-    love.graphics.draw(bg_image, planoDeFundo.x, planoDeFundo.y, 0,  larguraTela/bg_image:getWidth(), alturaTela/bg_image:getHeight())
-    love.graphics.draw(bg_image2, planoDeFundo.x2, planoDeFundo.y, 0,  larguraTela/bg_image:getWidth(), alturaTela/bg_image:getHeight())
-    --background
-
-
-    --Cat Animation
-    if catFighter.estaVivo then
-        catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
-    else
-        catDieAnimation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
-    end
-    --Cat Animation
-
-    --robot
-    for i, robot in ipairs(robots)  do
-        robotAnimation:draw(robotImagem, robot.x, robot.y)
-    end
-    --robot
-
-    --pontuacao
     love.graphics.setFont(fonte)
-    love.graphics.print("Pontuacao: ",10,10,0,1,1,0,2,0,0)
-    love.graphics.print(pontos, 105,13,0,1,1,5,5,0,0)
-    love.graphics.print("Vidas: ",larguraTela/2,15)
-    for i=1, vidas do
-        love.graphics.draw(coracao,  (larguraTela/2 + 20) + i*40, 10)
-    end
-    --pontuacao
+    if not gamerOver then
+        --chao
+        love.graphics.polygon("fill", catBody.body:getWorldPoints(catBody.shape:getPoints()))
 
-     --fogo
-     if not catFighter.estaVivo then
-        fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
+        --chao
+
+        --catBody
+        love.graphics.polygon("fill", chao.body:getWorldPoints(chao.shape:getPoints()))
+
+        --catBody
+
+        --background
+        love.graphics.draw(bg_image, planoDeFundo.x, planoDeFundo.y, 0,  larguraTela/bg_image:getWidth(), alturaTela/bg_image:getHeight())
+        love.graphics.draw(bg_image2, planoDeFundo.x2, planoDeFundo.y, 0,  larguraTela/bg_image:getWidth(), alturaTela/bg_image:getHeight())
+        --background
+
+
+        --Cat Animation
+        if catFighter.estaVivo then
+            catFighter.animation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
+        else
+            catDieAnimation:draw(catFighter.imagem, catFighter.posx, catFighter.posy,0,2,2)
+        end
+        --Cat Animation
+
+        --robot
+        for i, robot in ipairs(robots)  do
+            robotAnimation:draw(robotImagem, robot.x, robot.y)
+        end
+        --robot
+
+        --pontuacao
+        love.graphics.print("Pontuacao: ",10,10,0,1,1,0,2,0,0)
+        love.graphics.print(pontos, 105,13,0,1,1,5,5,0,0)
+        love.graphics.print("Vidas: ",larguraTela/2,15)
+        for i=1, vidas do
+            love.graphics.draw(coracao,  (larguraTela/2 + 20) + i*40, 10)
+        end
+        --pontuacao
+
+        --fogo
+        if not catFighter.estaVivo then
+            fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
+        end
+        --fogo
+    else
+        love.graphics.setBackgroundColor(176/255,224/255,230/255)
+        love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
+        love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-400, alturaTela/2 + deadCat:getHeight()/2 + 40, 0, 1.5, 1.5)
     end
-    --fogo
 end
 
 function catMovimento(dt)
@@ -177,6 +188,18 @@ end
 function love.keypressed(key)
     if key == 'space' and catBody.body:getY() > alturaTela-100 and catFighter.estaVivo then
         catBody.body:applyForce(0,-60000)
+    end
+    if key == 'p' and not pause then
+        pause = true
+    elseif key == 'p' and pause then
+        pause = false
+    end
+    if key == 'return' and gamerOver then
+        gamerOver = false
+        pause = false
+    end
+    if key == 'escape' then
+        love.event.quit()
     end
 end
 
@@ -213,6 +236,7 @@ function colisao(dt)
             if pontos > 0 then
                 pontos = pontos - 1
             end
+
             robot.atacou = true
             robot.verificado = true
             wait = true
@@ -245,3 +269,10 @@ function pontuacao(dt)
     end
 end
 
+function gameOver(dt)
+    if vidas < 0 then
+        love.load()
+        gamerOver = true
+        pause = true
+    end
+end
