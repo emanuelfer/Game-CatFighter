@@ -1,6 +1,6 @@
 function love.conf( t )
     --local onde o jogo é salvo
-    tidentity = nil
+    t.identity = nil
     t.version = "11.1"
     t.console = true
     t.accelerometerjoystick = true
@@ -9,15 +9,15 @@ function love.conf( t )
 
     t.window.title = "Zombel"
     t.window.icon = nil
-    t.window.width = 928
-    t.window.height = 793
+    t.window.width = 928/1.2
+    t.window.height = 793/1.2
     t.window.borderless = false
-    t.window.resizable = falsess
-    t.window.minwidth = 928
-    t.window.minheight = 793
-    t.window.fullscreen = false
+    t.window.resizable = false
+    t.window.minwidth = 928/1.2
+    t.window.minheight = 793/1.2
+    t.window.fullscreen = true
     t.window.fullscreentype = "desktop"
-    t.window.vsync = truue
+    t.window.vsync = true
     t.window.msaa = 0
     t.window.display = 1
     t.window.highdpi = false

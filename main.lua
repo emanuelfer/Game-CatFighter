@@ -22,7 +22,6 @@ function love.load()
     --fisica
     love.physics.setMeter(64)
     mundo = love.physics.newWorld(0,9.81*64,true)
-    gravidade = 400
     --fisica
 
     --background
@@ -41,7 +40,8 @@ function love.load()
     --chao
     chao = {}
     chao.body = love.physics.newBody(mundo, 0, alturaTela, "static")
-    chao.shape = love.physics.newRectangleShape(larguraTela,90)
+    chao.width = 100
+    chao.shape = love.physics.newRectangleShape(larguraTela*2,chao.width)
     chao.fixture = love.physics.newFixture(chao.body, chao.shape)
     --chao
 
@@ -61,14 +61,14 @@ function love.load()
     catAnimation = anim.newAnimation(catGrid('4-8',1),0.05)
     catFighter = {
         posx = catBody.body:getX() - 50,
-        posy = catBody.body:getY() - 50,
+        posy = catBody.body:getY() - 30,
         imagem = catFighterImagem,
         animation = catAnimation,
         vely = 0,
         alturaPulo = 450,
         estaVivo = true
     }
-
+   
     deadCat = love.graphics.newImage("imagens/SadCat.png")
     --Cat Fighter
 
@@ -94,13 +94,14 @@ function love.load()
 end
 
 function love.update(dt)
+    larguraTela = love.graphics.getWidth()
+    alturaTela = love.graphics.getHeight()
     if not pause then
+        chao.body:setPosition(0, alturaTela)
         mundo:update(dt)
-        larguraTela = love.graphics.getWidth()
-        alturaTela = love.graphics.getHeight()
         catMovimento(dt)
         catFighter.posx = catBody.body:getX() - 50
-        catFighter.posy = catBody.body:getY() - 50
+        catFighter.posy = catBody.body:getY() - 30
         criaRobot(dt)
         colisao(dt)
         pontuacao(dt)
@@ -111,14 +112,13 @@ end
 function love.draw()
     love.graphics.setFont(fonte)
     if not gamerOver and not telaInicial then
+
         --chao
         love.graphics.polygon("fill", catBody.body:getWorldPoints(catBody.shape:getPoints()))
-
         --chao
 
         --catBody
         love.graphics.polygon("fill", chao.body:getWorldPoints(chao.shape:getPoints()))
-
         --catBody
 
         --background
@@ -156,31 +156,32 @@ function love.draw()
         end
         --fogo
     elseif not telaInicial then
-        love.graphics.draw(gameOverBackground, 0,0,0,0.75,0.75)
+        love.graphics.draw(gameOverBackground, 0,0,0,larguraTela/gameOverBackground:getWidth(), alturaTela/gameOverBackground:getHeight())
         love.graphics.setBackgroundColor(176/255,224/255,230/255)
         love.graphics.print("Pontos: ".. pontos, larguraTela/2 -50, 50 ,0,1.5,1.5)
         love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
         love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-400, alturaTela/2 + deadCat:getHeight()/2 + 40, 0, 1.5, 1.5)
     else
-        love.graphics.draw(gameStartBackground, -300,0)
+        love.graphics.draw(gameStartBackground, 0,0, 0, larguraTela/gameStartBackground:getWidth(),alturaTela/gameStartBackground:getHeight())
     end
 end
 
 function catMovimento(dt)
     if catFighter.estaVivo then
         if love.keyboard.isDown('right') then
-            if catBody.body:getX() < larguraTela/2 - 50 then
+            if catBody.body:getX() < larguraTela/2 - 25 then
                 catBody.body:setX(catBody.body:getX() + planoDeFundo.vel*dt)
             end
-
             planoDeFundo.x = planoDeFundo.x - planoDeFundo.vel*dt
             planoDeFundo.x2 = planoDeFundo.x2 - planoDeFundo.vel*dt
 
             if planoDeFundo.x < -larguraTela then
                 planoDeFundo.x = larguraTela
+                planoDeFundo.x2 = 0
             end
             if planoDeFundo.x2 < -larguraTela then
                 planoDeFundo.x2 = larguraTela
+                planoDeFundo.x = 0
             end
             andaRobot(dt)
             catFighter.animation:update(dt)
@@ -193,7 +194,7 @@ function catMovimento(dt)
 end
 
 function love.keypressed(key)
-    if key == 'space' and catBody.body:getY() > alturaTela-100 and catFighter.estaVivo then
+    if key == 'space' and catBody.body:getY() > alturaTela-150 and catFighter.estaVivo then
         catBody.body:applyForce(0,-60000)
     end
     if key == 'p' and not pause then
@@ -220,7 +221,8 @@ function criaRobot(dt)
 
     if tempoCriacaoRobot < 0 then
         tempoCriacaoRobot = delayRobot
-        novoRobot = {x = larguraTela, y = alturaTela - 165, imagem = robotImagem}
+        x,y = chao.body:getPosition()
+        novoRobot = {x = larguraTela, y = y-105-chao.width/2, imagem = robotImagem}
         table.insert(robots,novoRobot)
     end
     andaRobot(dt)
@@ -256,7 +258,6 @@ function colisao(dt)
             end
             catDieAnimation:update(dt)
             fogoAnimation:update(dt)
-            print(waitTime)
             waitTime = waitTime + dt
             if waitTime > 1.5 then
                 wait = false
@@ -278,9 +279,15 @@ function pontuacao(dt)
 end
 
 function gameOver(dt)
-    if vidas < 0 then
-        love.load()
-        gamerOver = true
-        pause = true
+    if vidas < 0 and not wait then
+        wait = true
+        catFighter.estaVivo = false
+    elseif wait and vidas < 0 then
+        waitTime = waitTime + dt
+        if waitTime > 1.5 then
+            love.load()
+            gamerOver = true
+            pause = true
+        end
     end
 end
