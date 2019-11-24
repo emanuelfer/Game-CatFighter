@@ -59,6 +59,7 @@ function love.load()
     catFighterImagem = love.graphics.newImage("imagens/cat.png")
     catGrid = anim.newGrid(50,50, catFighterImagem:getWidth(), catFighterImagem:getHeight())
     catDieAnimation = anim.newAnimation(catGrid('7-3',4),0.1)
+    catAttackAnimation = anim.newAnimation(catGrid('1-6',2),0.05)
     catAnimation = anim.newAnimation(catGrid('4-8',1),0.05)
     catFighter = {
         x = catBody.body:getX() - 50,
@@ -66,10 +67,22 @@ function love.load()
         imagem = catFighterImagem,
         animation = catAnimation,
         vely = 0,
-        estaVivo = true
+        estaVivo = true,
+        atacando = false
     }
    
     deadCat = love.graphics.newImage("imagens/SadCat.png")
+
+    --catPower
+    power = {}
+    catPowerImagem = love.graphics.newImage("imagens/CatPower.png")
+    catPowerGrid = anim.newGrid(32,32,catPowerImagem:getWidth(),catPowerImagem:getHeight())
+    catPowerAnimation = anim.newAnimation(catPowerGrid('1-4',1),0.1)
+
+    explosaoImagem = love.graphics.newImage("imagens/Explosao.png")
+    explosaoGrid = anim.newGrid(192,192, explosaoImagem:getWidth(), explosaoImagem:getHeight())
+    explosaoAnimation = anim.newAnimation(explosaoGrid('1-5',2,'1-5',3,'1-5',4,'1-4',5),0.055)
+    --catPower
     --Cat Fighter
 
     --robot
@@ -79,6 +92,12 @@ function love.load()
     robotExplosao = {
         x=0,
         y=0
+    }
+    robotAtingido = {
+        wait = false,
+        waitTime = 0,
+        x = 0,
+        y = 0
     }
 
     robotImagem = love.graphics.newImage("imagens/robot.png")
@@ -106,6 +125,7 @@ function love.update(dt)
         colisao(dt)
         pontuacao(dt)
         gameOver(dt)
+        catAtaque(dt)
     end
 end
 
@@ -128,10 +148,19 @@ function love.draw()
 
 
         --Cat Animation
-        if catFighter.estaVivo then
+        if catFighter.estaVivo and not catFighter.atacando then
             catFighter.animation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
+        elseif catFighter.estaVivo and catFighter.atacando then
+            catAttackAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
         else
             catDieAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
+        end
+        for i, poder in ipairs(power) do
+            catPowerAnimation:draw(catPowerImagem,poder.x,poder.y,0,2,2)
+        end
+
+        if robotAtingido.wait then
+            explosaoAnimation:draw(explosaoImagem,robotAtingido.x, robotAtingido.y)
         end
         --Cat Animation
 
@@ -214,6 +243,13 @@ function love.keypressed(key)
     end
     if key == 'escape' then
         love.event.quit()
+    end
+    if key == 'a' and not pause and catFighter.estaVivo then
+        catFighter.atacando = true
+        wait = true
+        catPower = {}
+        catPower.x, catPower.y = catBody.body:getX(), catBody.body:getY() - 10
+        table.insert( power,catPower )
     end
 end
 
@@ -298,4 +334,41 @@ function love.mousepressed(mx,my,button)
         telaInicial = false
         pause = false
     end
+end
+
+function catAtaque(dt)
+    catAttackAnimation:update(dt) 
+    for i, poder in ipairs(power) do
+        for j, robot in ipairs(robots) do
+            if checaColisao(poder.x, poder.y, 64, 64, robot.x +20, robot.y, 40, 100) then
+                robotAtingido.x, robotAtingido.y = robot.x, robot.y - 20
+                robotAtingido.wait = true
+                table.remove( robots,j )
+                table.remove( power, i )
+                pontos = pontos + 1
+            end
+        end
+        poder.x = poder.x + 300*dt
+        catPowerAnimation:update(dt)
+        if poder.x > larguraTela then
+            table.remove( power,i )
+        end
+    end
+    if catFighter.atacando then
+        waitTime = waitTime + dt
+        if waitTime > 0.5 then
+            wait = false
+            waitTime = 0
+            catFighter.atacando = false
+        end
+    end
+    if robotAtingido.wait then
+        explosaoAnimation:update(dt)
+        robotAtingido.waitTime = robotAtingido.waitTime + dt
+        if robotAtingido.waitTime > 1 then
+            robotAtingido.waitTime = 0
+            robotAtingido.wait = false
+        end
+    end
+
 end
