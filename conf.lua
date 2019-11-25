@@ -7,7 +7,7 @@ function love.conf( t )
     t.externalstorage = false
     t.gamacorrect = false
 
-    t.window.title = "Zombel"
+    t.window.title = "Cat Fighter"
     t.window.icon = nil
     t.window.width = 928/1.2
     t.window.height = 793/1.2
@@ -15,7 +15,7 @@ function love.conf( t )
     t.window.resizable = false
     t.window.minwidth = 928/1.2
     t.window.minheight = 793/1.2
-    t.window.fullscreen = false
+    t.window.fullscreen = true
     t.window.fullscreentype = "desktop"
     t.window.vsync = true
     t.window.msaa = 0

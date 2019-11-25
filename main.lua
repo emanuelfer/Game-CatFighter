@@ -68,13 +68,16 @@ function love.load()
         animation = catAnimation,
         vely = 0,
         estaVivo = true,
-        atacando = false
+        atacando = false,
+        wait = false,
+        waitTime = 0
     }
    
     deadCat = love.graphics.newImage("imagens/SadCat.png")
 
     --catPower
     power = {}
+    ataque = {}
     catPowerImagem = love.graphics.newImage("imagens/CatPower.png")
     catPowerGrid = anim.newGrid(32,32,catPowerImagem:getWidth(),catPowerImagem:getHeight())
     catPowerAnimation = anim.newAnimation(catPowerGrid('1-4',1),0.1)
@@ -155,7 +158,7 @@ function love.draw()
         else
             catDieAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
         end
-        for i, poder in ipairs(power) do
+        for i, poder in ipairs(ataque) do
             catPowerAnimation:draw(catPowerImagem,poder.x,poder.y,0,2,2)
         end
 
@@ -171,12 +174,21 @@ function love.draw()
         --robot
 
         --pontuacao
-        love.graphics.print("Pontuacao: ",10,10,0,1,1,0,2,0,0)
-        love.graphics.print(pontos, 105,13,0,1,1,5,5,0,0)
-        love.graphics.print("Vidas: ",larguraTela/2,15)
-        for i=1, vidas do
-            love.graphics.draw(coracao,  (larguraTela/2 + 20) + i*40, 10)
+        love.graphics.print("Pontuacao:",30,30,0,1.5,1.5,0,2,0,0)
+        love.graphics.print(pontos, 180,33,0,1.5,1.5,5,5,0,0)
+        love.graphics.print("Poder:", 30, 60,0,1.5,1.5)
+        love.graphics.setColor(0/255,191/255,255/255)
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line",125,65,200,15)
+        for i=1, #power do
+            love.graphics.rectangle("fill",125,65,i*(200/3),15)
         end
+        love.graphics.setColor(255,255,255)
+        love.graphics.print("Vidas: ",larguraTela/2,35,0,1.5,1.5)
+        for i=1, vidas do
+            love.graphics.draw(coracao,  (larguraTela/2 + 50) + i*40, 30)
+        end
+
         --pontuacao
 
         --fogo
@@ -186,10 +198,9 @@ function love.draw()
         --fogo
     elseif not telaInicial then
         love.graphics.draw(gameOverBackground, 0,0,0,larguraTela/gameOverBackground:getWidth(), alturaTela/gameOverBackground:getHeight())
-        love.graphics.setBackgroundColor(176/255,224/255,230/255)
-        love.graphics.print("Pontos: ".. pontos, larguraTela/2 -50, 50 ,0,1.5,1.5)
+        love.graphics.print("Pontos: ".. pontos, larguraTela/2 - 85, 50 ,0,1.8,1.8)
         love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
-        love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-400, alturaTela/2 + deadCat:getHeight()/2 + 40, 0, 1.5, 1.5)
+        love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-485, alturaTela/2 + deadCat:getHeight()/2 + 80, 0, 1.8, 1.8)
     else
         love.graphics.draw(gameStartBackground, 0,0, 0, larguraTela/gameStartBackground:getWidth(),alturaTela/gameStartBackground:getHeight())
         love.graphics.draw(startButton, larguraTela/2 - startButton:getWidth()/2, alturaTela/2 - startButton:getHeight()/2)
@@ -245,11 +256,13 @@ function love.keypressed(key)
         love.event.quit()
     end
     if key == 'a' and not pause and catFighter.estaVivo then
-        catFighter.atacando = true
-        wait = true
-        catPower = {}
-        catPower.x, catPower.y = catBody.body:getX(), catBody.body:getY() - 10
-        table.insert( power,catPower )
+        if #power > 0 then
+            catFighter.atacando = true
+            wait = true
+            power[1].x, power[1].y = catBody.body:getX(), catBody.body:getY() - 10 
+            table.insert( ataque,power[1] )
+            table.remove( power,1 )
+        end
     end
 end
 
@@ -310,6 +323,13 @@ function pontuacao(dt)
     for i, robot in ipairs(robots) do
         if catFighter.estaVivo and not robot.verificado and not robot.atacou and robot.x + 105/2  < catFighter.x then
             pontos = pontos + 1 
+            if pontos%2 == 0 and #power < 3 then
+                catPower = {
+                    x = 0,
+                    y = 0
+                }
+                table.insert( power,catPower )
+            end
             robot.verificado = true
         end
     end
@@ -338,27 +358,27 @@ end
 
 function catAtaque(dt)
     catAttackAnimation:update(dt) 
-    for i, poder in ipairs(power) do
+    for i, poder in ipairs(ataque) do
         for j, robot in ipairs(robots) do
             if checaColisao(poder.x, poder.y, 64, 64, robot.x +20, robot.y, 40, 100) then
                 robotAtingido.x, robotAtingido.y = robot.x, robot.y - 20
                 robotAtingido.wait = true
                 table.remove( robots,j )
-                table.remove( power, i )
+                table.remove( ataque, i )
                 pontos = pontos + 1
             end
         end
         poder.x = poder.x + 300*dt
         catPowerAnimation:update(dt)
         if poder.x > larguraTela then
-            table.remove( power,i )
+            table.remove( ataque,i )
         end
     end
     if catFighter.atacando then
-        waitTime = waitTime + dt
-        if waitTime > 0.5 then
-            wait = false
-            waitTime = 0
+        catFighter.waitTime = catFighter.waitTime + dt
+        if catFighter.waitTime > 0.5 then
+            catFighter.wait = false
+            catFighter.waitTime = 0
             catFighter.atacando = false
         end
     end
