@@ -200,7 +200,7 @@ function love.draw()
         love.graphics.draw(gameOverBackground, 0,0,0,larguraTela/gameOverBackground:getWidth(), alturaTela/gameOverBackground:getHeight())
         love.graphics.print("Pontos: ".. pontos, larguraTela/2 - 85, 50 ,0,1.8,1.8)
         love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
-        love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-485, alturaTela/2 + deadCat:getHeight()/2 + 80, 0, 1.8, 1.8)
+        love.graphics.print("Deixaste CatFighter morrer! Aperta Enter para jogar novamente!", larguraTela/2-485, alturaTela/2 + deadCat:getHeight()/2 + 80, 0, 1.8, 1.8)
     else
         love.graphics.draw(gameStartBackground, 0,0, 0, larguraTela/gameStartBackground:getWidth(),alturaTela/gameStartBackground:getHeight())
         love.graphics.draw(startButton, larguraTela/2 - startButton:getWidth()/2, alturaTela/2 - startButton:getHeight()/2)
