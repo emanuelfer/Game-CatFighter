@@ -7,9 +7,6 @@ pontos = 0
 telaInicial = true
 
 function love.load()
-    wait = false
-    waitTime = 0
-
     vidas = 3
     coracao = love.graphics.newImage("imagens/vidas.png")
     gamerOver = false
@@ -36,12 +33,13 @@ function love.load()
     gameOverBackground = love.graphics.newImage("imagens/GameOverBackground.png")
     gameStartBackground = love.graphics.newImage("imagens/GameStartBackground.png")
     startButton = love.graphics.newImage("imagens/StartButton.png")
+    configButton = love.graphics.newImage("imagens/config.png")
     --background
 
     --chao
     chao = {}
     chao.body = love.physics.newBody(mundo, 0, alturaTela, "static")
-    chao.width = 100
+    chao.width = 150
     chao.shape = love.physics.newRectangleShape(larguraTela*2,chao.width)
     chao.fixture = love.physics.newFixture(chao.body, chao.shape)
     --chao
@@ -63,10 +61,9 @@ function love.load()
     catAnimation = anim.newAnimation(catGrid('4-8',1),0.05)
     catFighter = {
         x = catBody.body:getX() - 50,
-        y = catBody.body:getY() - 30,
+        y = catBody.body:getY() - 45,
         imagem = catFighterImagem,
         animation = catAnimation,
-        vely = 0,
         estaVivo = true,
         atacando = false,
         wait = false,
@@ -92,10 +89,6 @@ function love.load()
     delayRobot = 5
     tempoCriacaoRobot = delayRobot
     robots = {}
-    robotExplosao = {
-        x=0,
-        y=0
-    }
     robotAtingido = {
         wait = false,
         waitTime = 0,
@@ -123,11 +116,10 @@ function love.update(dt)
         mundo:update(dt)
         catMovimento(dt)
         catFighter.x = catBody.body:getX() - 50
-        catFighter.y = catBody.body:getY() - 30
+        catFighter.y = catBody.body:getY() - 45
         criaRobot(dt)
         colisao(dt)
         pontuacao(dt)
-        gameOver(dt)
         catAtaque(dt)
     end
 end
@@ -152,14 +144,14 @@ function love.draw()
 
         --Cat Animation
         if catFighter.estaVivo and not catFighter.atacando then
-            catFighter.animation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
+            catFighter.animation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2.5,2.5)
         elseif catFighter.estaVivo and catFighter.atacando then
-            catAttackAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
+            catAttackAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2.5,2.5)
         else
-            catDieAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2,2)
+            catDieAnimation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2.5,2.5)
         end
         for i, poder in ipairs(ataque) do
-            catPowerAnimation:draw(catPowerImagem,poder.x,poder.y,0,2,2)
+            catPowerAnimation:draw(catPowerImagem,poder.x,poder.y,0,2.5,2.5)
         end
 
         if robotAtingido.wait then
@@ -170,6 +162,11 @@ function love.draw()
         --robot
         for i, robot in ipairs(robots)  do
             robotAnimation:draw(robotImagem, robot.x, robot.y)
+            --fogo
+            if not catFighter.estaVivo and robot.atacou then
+                fogoAnimation:draw(fogoImagem, robot.x-70,robot.y-170)
+            end
+            --fogo
         end
         --robot
 
@@ -188,14 +185,7 @@ function love.draw()
         for i=1, vidas do
             love.graphics.draw(coracao,  (larguraTela/2 + 50) + i*40, 30)
         end
-
         --pontuacao
-
-        --fogo
-        if not catFighter.estaVivo then
-            fogoAnimation:draw(fogoImagem, robotExplosao.x-70,robotExplosao.y-170)
-        end
-        --fogo
     elseif not telaInicial then
         love.graphics.draw(gameOverBackground, 0,0,0,larguraTela/gameOverBackground:getWidth(), alturaTela/gameOverBackground:getHeight())
         love.graphics.print("Pontos: ".. pontos, larguraTela/2 - 85, 50 ,0,1.8,1.8)
@@ -204,6 +194,7 @@ function love.draw()
     else
         love.graphics.draw(gameStartBackground, 0,0, 0, larguraTela/gameStartBackground:getWidth(),alturaTela/gameStartBackground:getHeight())
         love.graphics.draw(startButton, larguraTela/2 - startButton:getWidth()/2, alturaTela/2 - startButton:getHeight()/2)
+        love.graphics.draw(configButton, larguraTela/2 - configButton:getWidth()/2, alturaTela/2 - configButton:getHeight()/2 + 200)
     end
 end
 
@@ -294,25 +285,29 @@ end
 
 function colisao(dt)
     for i, robot in ipairs(robots) do
-        if (not wait) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-35, catBody.body:getY(), 50, 50)then
+        if (catFighter.estaVivo) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-30, catBody.body:getY(), 50, 50)then
             catFighter.estaVivo = false
             vidas = vidas - 1
             robot.atacou = true
             robot.verificado = true
-            wait = true
+            catFighter.wait = true
             break
-        elseif wait then
-            if robot.atacou then
-                robotExplosao.x = robot.x
-                robotExplosao.y = robot.y
-            end
+        elseif not catFighter.estaVivo and robot.atacou then
             catDieAnimation:update(dt)
             fogoAnimation:update(dt)
-            waitTime = waitTime + dt
-            if waitTime > 1.5 then
-                wait = false
-                waitTime = 0
-                catFighter.estaVivo = true
+
+            catFighter.waitTime = catFighter.waitTime + dt
+            if catFighter.waitTime > 1 then
+                robot.atacou = false
+                catFighter.wait = false
+                catFighter.waitTime = 0
+                if vidas < 0 then
+                    love.load()
+                    gamerOver = true
+                    pause = true
+                else
+                    catFighter.estaVivo = true
+                end
             end
         end
 
@@ -335,24 +330,13 @@ function pontuacao(dt)
     end
 end
 
-function gameOver(dt)
-    if vidas < 0 and not wait then
-        wait = true
-        catFighter.estaVivo = false
-    elseif wait and vidas < 0 then
-        waitTime = waitTime + dt
-        if waitTime > 1.5 then
-            love.load()
-            gamerOver = true
-            pause = true
-        end
-    end
-end
-
 function love.mousepressed(mx,my,button)
     if button == 1 and mx >= (larguraTela/2-startButton:getWidth()/2) and mx < (larguraTela/2 + startButton:getWidth()/2) and my >= (alturaTela/2 - startButton:getHeight()/2) and my < (alturaTela/2 + startButton:getHeight()/2) then
         telaInicial = false
         pause = false
+    end
+    if button == 1 and mx >= (larguraTela/2-configButton:getWidth()/2) and mx < (larguraTela/2 + configButton:getWidth()/2) and my >= (alturaTela/2 - configButton:getHeight()/2+200) and my < (alturaTela/2 + configButton:getHeight()/2 + 200) then
+        print("sim")
     end
 end
 
