@@ -51,6 +51,7 @@ function love.load()
     pulo = love.audio.newSource("sons/pulo.mp3", "static")
     fogo = love.audio.newSource("sons/fogo.mp3", "static")
     ohno = love.audio.newSource("sons/ohno.wav", "static")
+    gameOverSound = love.audio.newSource("sons/gameover.mp3", "static")
     --sons
 
     --Cat Fighter
@@ -316,6 +317,7 @@ function colisao(dt)
                 catFighter.wait = false
                 catFighter.waitTime = 0
                 if vidas < 0 then
+                    gameOverSound:play()
                     love.load()
                     gamerOver = true
                     pause = true
@@ -349,20 +351,18 @@ function love.mousepressed(mx,my,button)
         telaInicial = false
         pause = false
         gamerOver = false
-        print("sim")
     end
     if telaInicial and button == 1 and mx >= (larguraTela/2-configButton:getWidth()/2) and mx < (larguraTela/2 + configButton:getWidth()/2) and my >= (alturaTela/2 - configButton:getHeight()/2+200) and my < (alturaTela/2 + configButton:getHeight()/2 + 200) then
         print("sim")
     end
-    if gamerOver and button == 1 and mx >= (larguraTela/2-restartButton:getWidth()/2) and mx < (larguraTela/2 + restartButton:getWidth()/2) and my >= (alturaTela/2 - (restartButton:getHeight()/2+300)) and my < (alturaTela/2 + restartButton:getHeight()/2 + 300) then
+    if gamerOver and button == 1 and mx >= (larguraTela/2-restartButton:getWidth()/2) and mx < (larguraTela/2 + restartButton:getWidth()/2) and my >= (alturaTela/2 + 100) and my < (alturaTela/2 + restartButton:getHeight() + 100) then
         gamerOver = false
         pause = false
         pontos = 0
     end
-    if gameOver and button == 1 and mx >= (larguraTela/2-backButton:getWidth()/2) and mx < (larguraTela/2 + backButton:getWidth()/2) and my >= (alturaTela/2 - (backButton:getHeight()/2+300)) and my < (alturaTela/2 + backButton:getHeight()/2 + 300) then
+    if gamerOver and button == 1 and mx >= (larguraTela/2-backButton:getWidth()/2) and mx < (larguraTela/2 + backButton:getWidth()/2) and my >= (alturaTela/2 +300) and my < (alturaTela/2 + backButton:getHeight() + 300) then
         telaInicial = true
         pause = true
-
     end
 end
 
