@@ -33,7 +33,9 @@ function love.load()
     gameOverBackground = love.graphics.newImage("imagens/GameOverBackground.png")
     gameStartBackground = love.graphics.newImage("imagens/GameStartBackground.png")
     startButton = love.graphics.newImage("imagens/StartButton.png")
+    restartButton = love.graphics.newImage("imagens/restart.png")
     configButton = love.graphics.newImage("imagens/config.png")
+    backButton = love.graphics.newImage("imagens/back.png")
     --background
 
     --chao
@@ -44,6 +46,11 @@ function love.load()
     chao.fixture = love.physics.newFixture(chao.body, chao.shape)
     --chao
 
+    --sons
+    explosao = love.audio.newSource("sons/explosao.mp3", "static")
+    pulo = love.audio.newSource("sons/pulo.mp3", "static")
+    fogo = love.audio.newSource("sons/fogo.mp3", "static")
+    --sons
 
     --Cat Fighter
     --catBody
@@ -187,11 +194,14 @@ function love.draw()
         end
         --pontuacao
     elseif not telaInicial then
+        --tela de game over
         love.graphics.draw(gameOverBackground, 0,0,0,larguraTela/gameOverBackground:getWidth(), alturaTela/gameOverBackground:getHeight())
         love.graphics.print("Pontos: ".. pontos, larguraTela/2 - 85, 50 ,0,1.8,1.8)
-        love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - deadCat:getHeight()/2, 0, 1,1)
-        love.graphics.print("Deixaste CatFighter morrer! Aperte Enter para jogar novamente!", larguraTela/2-485, alturaTela/2 + deadCat:getHeight()/2 + 80, 0, 1.8, 1.8)
+        love.graphics.draw(deadCat, larguraTela/2 - deadCat:getWidth()/2,alturaTela/2 - 400, 0, 1,1)
+        love.graphics.draw(restartButton, larguraTela/2 - restartButton:getWidth()/2,alturaTela/2 +100)
+        love.graphics.draw(backButton, larguraTela/2 - backButton:getWidth()/2, alturaTela/2+300)
     else
+        --tela inicial
         love.graphics.draw(gameStartBackground, 0,0, 0, larguraTela/gameStartBackground:getWidth(),alturaTela/gameStartBackground:getHeight())
         love.graphics.draw(startButton, larguraTela/2 - startButton:getWidth()/2, alturaTela/2 - startButton:getHeight()/2)
         love.graphics.draw(configButton, larguraTela/2 - configButton:getWidth()/2, alturaTela/2 - configButton:getHeight()/2 + 200)
@@ -227,6 +237,7 @@ end
 
 function love.keypressed(key)
     if key == 'space' and catBody.body:getY() > alturaTela-150 and catFighter.estaVivo then
+        pulo:play()
         catBody.body:applyForce(0,-60000)
     end
     if key == 'p' and not pause then
@@ -293,11 +304,12 @@ function colisao(dt)
             catFighter.wait = true
             break
         elseif not catFighter.estaVivo and robot.atacou then
+            fogo:play()
             catDieAnimation:update(dt)
             fogoAnimation:update(dt)
-
             catFighter.waitTime = catFighter.waitTime + dt
             if catFighter.waitTime > 1 then
+                fogo:stop()
                 robot.atacou = false
                 catFighter.wait = false
                 catFighter.waitTime = 0
@@ -331,12 +343,24 @@ function pontuacao(dt)
 end
 
 function love.mousepressed(mx,my,button)
-    if button == 1 and mx >= (larguraTela/2-startButton:getWidth()/2) and mx < (larguraTela/2 + startButton:getWidth()/2) and my >= (alturaTela/2 - startButton:getHeight()/2) and my < (alturaTela/2 + startButton:getHeight()/2) then
+    if telaInicial and button == 1 and mx >= (larguraTela/2-startButton:getWidth()/2) and mx < (larguraTela/2 + startButton:getWidth()/2) and my >= (alturaTela/2 - startButton:getHeight()/2) and my < (alturaTela/2 + startButton:getHeight()/2) then
         telaInicial = false
         pause = false
-    end
-    if button == 1 and mx >= (larguraTela/2-configButton:getWidth()/2) and mx < (larguraTela/2 + configButton:getWidth()/2) and my >= (alturaTela/2 - configButton:getHeight()/2+200) and my < (alturaTela/2 + configButton:getHeight()/2 + 200) then
+        gamerOver = false
         print("sim")
+    end
+    if telaInicial and button == 1 and mx >= (larguraTela/2-configButton:getWidth()/2) and mx < (larguraTela/2 + configButton:getWidth()/2) and my >= (alturaTela/2 - configButton:getHeight()/2+200) and my < (alturaTela/2 + configButton:getHeight()/2 + 200) then
+        print("sim")
+    end
+    if gamerOver and button == 1 and mx >= (larguraTela/2-restartButton:getWidth()/2) and mx < (larguraTela/2 + restartButton:getWidth()/2) and my >= (alturaTela/2 - (restartButton:getHeight()/2+300)) and my < (alturaTela/2 + restartButton:getHeight()/2 + 300) then
+        gamerOver = false
+        pause = false
+        pontos = 0
+    end
+    if gameOver and button == 1 and mx >= (larguraTela/2-backButton:getWidth()/2) and mx < (larguraTela/2 + backButton:getWidth()/2) and my >= (alturaTela/2 - (backButton:getHeight()/2+300)) and my < (alturaTela/2 + backButton:getHeight()/2 + 300) then
+        telaInicial = true
+        pause = true
+
     end
 end
 
@@ -345,6 +369,7 @@ function catAtaque(dt)
     for i, poder in ipairs(ataque) do
         for j, robot in ipairs(robots) do
             if checaColisao(poder.x, poder.y, 64, 64, robot.x +20, robot.y, 40, 100) then
+                explosao:play()
                 robotAtingido.x, robotAtingido.y = robot.x, robot.y - 20
                 robotAtingido.wait = true
                 table.remove( robots,j )
