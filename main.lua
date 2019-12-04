@@ -50,6 +50,7 @@ function love.load()
     explosao = love.audio.newSource("sons/explosao.mp3", "static")
     pulo = love.audio.newSource("sons/pulo.mp3", "static")
     fogo = love.audio.newSource("sons/fogo.mp3", "static")
+    ohno = love.audio.newSource("sons/ohno.wav", "static")
     --sons
 
     --Cat Fighter
@@ -297,6 +298,7 @@ end
 function colisao(dt)
     for i, robot in ipairs(robots) do
         if (catFighter.estaVivo) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-30, catBody.body:getY(), 50, 50)then
+            ohno:play()
             catFighter.estaVivo = false
             vidas = vidas - 1
             robot.atacou = true
