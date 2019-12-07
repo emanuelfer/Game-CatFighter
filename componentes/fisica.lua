@@ -11,6 +11,11 @@ function fisicaLoad()
     --chao
 end
 
+function fisicaUpdate(dt)
+    chao.body:setPosition(0, alturaTela)
+    mundo:update(dt)
+end
+
 function fisicaDraw()
     love.graphics.polygon("fill", chao.body:getWorldPoints(chao.shape:getPoints()))
     love.graphics.polygon("fill", catBody.body:getWorldPoints(catBody.shape:getPoints()))

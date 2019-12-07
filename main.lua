@@ -19,6 +19,7 @@ function love.load()
     vidas = 3
     gamerOver = false
     pause = true
+    velocidade = 150
 
     fisicaLoad()
     backgroundLoad()
@@ -31,18 +32,16 @@ function love.load()
 end
 
 function love.update(dt)
-    larguraTela = love.graphics.getWidth()
-    alturaTela = love.graphics.getHeight()
+    backgroundUpdate(dt)
     if not pause then
-        chao.body:setPosition(0, alturaTela)
-        mundo:update(dt)
+        fisicaUpdate(dt)
         catMovimento(dt)
-        catFighter.x = catBody.body:getX() - 50
-        catFighter.y = catBody.body:getY() - 45
+        catUpdate(dt)
         criaRobot(dt)
         colisao(dt)
         pontuacao(dt)
         catAtaque(dt)
+        andaRobot(dt)
     end
 end
 
@@ -80,8 +79,7 @@ end
 
 function love.keypressed(key)
     if key == 'space' and catBody.body:getY() > alturaTela-chao.width and catFighter.estaVivo then
-        pulo:play()
-        catBody.body:applyForce(0,-60000)
+        pular()
     end
     if key == 'p' and not pause then
         pause = true
@@ -104,13 +102,7 @@ function love.keypressed(key)
         love.event.quit()
     end
     if key == 'a' and not pause and catFighter.estaVivo then
-        if #power > 0 then
-            catFighter.atacando = true
-            wait = true
-            power[1].x, power[1].y = catBody.body:getX(), catBody.body:getY()-20 
-            table.insert( ataque,power[1] )
-            table.remove( power,1 )
-        end
+        lancaPoder()
     end
 end
 

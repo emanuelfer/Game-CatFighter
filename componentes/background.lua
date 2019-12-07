@@ -16,6 +16,11 @@ function backgroundDraw()
     love.graphics.draw(bg_image2, planoDeFundo.x2, planoDeFundo.y, 0,  larguraTela/bg_image:getWidth(), alturaTela/bg_image:getHeight())
 end
 
+function backgroundUpdate(dt)
+    larguraTela = love.graphics.getWidth()
+    alturaTela = love.graphics.getHeight()
+end
+
 function pontuacaoDraw()
     love.graphics.print("Pontuacao:",30,30,0,1.5,1.5,0,2,0,0)
     love.graphics.print(pontos, 180,33,0,1.5,1.5,5,5,0,0)

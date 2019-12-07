@@ -8,7 +8,7 @@ function robotLoad(  )
         x = 0,
         y = 0
     }
-
+    velocidade = 200
     robotImagem = love.graphics.newImage("imagens/robot.png")
     robotGrid = anim.newGrid(105,105, robotImagem:getWidth(), robotImagem:getHeight())
     robotAnimation = anim.newAnimation(robotGrid('1-9',5),0.25)
@@ -34,6 +34,16 @@ function robotExplosao()
 end
 
 function criaRobot(dt)
+    if pontos > 5 then
+        delayRobot = 3
+        velocidade = 250
+    elseif pontos > 10 then
+        delayRobot = 1
+        velocidade = 350
+    elseif pontos > 20 then
+        delayRobot = 0.5
+        velocidade = 450
+    end
     tempoCriacaoRobot = tempoCriacaoRobot - dt
 
     if tempoCriacaoRobot < 0 then
@@ -42,12 +52,15 @@ function criaRobot(dt)
         novoRobot = {x = larguraTela, y = y-105-chao.width/2, imagem = robotImagem}
         table.insert(robots,novoRobot)
     end
-    andaRobot(dt)
 end
 
 function andaRobot(dt)
     for i, robot in ipairs(robots) do
-        robot.x = robot.x - 150*dt
+        if love.keyboard.isDown("right") then
+            robot.x = robot.x - (velocidade+planoDeFundo.vel)*dt
+        else
+            robot.x = robot.x - (velocidade)*dt
+        end
         robotAnimation:update(dt)
         if robot.x < 0 - robotImagem:getWidth() then
             table.remove(robots, i )
@@ -55,6 +68,3 @@ function andaRobot(dt)
     end
 end
 
-function checaColisao(x1,y1,w1,h1,x2,y2,w2,h2)
-    return x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1
-end

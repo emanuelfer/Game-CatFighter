@@ -38,6 +38,11 @@ function catFighterLoad()
     --catPower
 end
 
+function catUpdate( dt )
+    catFighter.x = catBody.body:getX() - 50
+    catFighter.y = catBody.body:getY() - 45
+end
+
 function catFighterDraw()
     catFighter.animation:draw(catFighter.imagem, catFighter.x, catFighter.y,0,2.5,2.5)
 end
@@ -73,7 +78,6 @@ function catMovimento(dt)
                 planoDeFundo.x2 = larguraTela
                 planoDeFundo.x = 0
             end
-            andaRobot(dt)
             catFighter.animation:update(dt)
         end 
         if love.keyboard.isDown('left') and catFighter.x > 0 then
@@ -117,5 +121,20 @@ function catAtaque(dt)
             robotAtingido.waitTime = 0
             robotAtingido.wait = false
         end
+    end
+end
+
+function pular()
+    pulo:play()
+    catBody.body:applyForce(0,-60000)
+end
+
+function lancaPoder()
+    if #power > 0 then
+        catFighter.atacando = true
+        wait = true
+        power[1].x, power[1].y = catBody.body:getX(), catBody.body:getY()-20 
+        table.insert( ataque,power[1] )
+        table.remove( power,1 )
     end
 end
