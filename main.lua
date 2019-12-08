@@ -7,6 +7,7 @@ require("componentes/background")
 require("componentes/catFighter")
 require("componentes/robot")
 require("componentes/colisoes")
+require("componentes/telaConfig")
 
 
 larguraTela = love.graphics.getWidth()
@@ -14,13 +15,18 @@ alturaTela = love.graphics.getHeight()
 
 pontos = 0
 telaInicial = true
+telaGameOver = false
+
+somAtivo = true
 
 function love.load()
+    telaConfig = false
     vidas = 3
     gamerOver = false
     pause = true
     velocidade = 150
 
+    telaConfigLoad()
     fisicaLoad()
     backgroundLoad()
     telaGameOverLoad()
@@ -47,7 +53,9 @@ end
 
 function love.draw()
     love.graphics.setFont(fonte)
-    if not gamerOver and not telaInicial then
+    if telaConfig then
+        telaConfigDraw()
+    elseif not telaGameOver and not telaInicial then
 
         fisicaDraw()
 
@@ -70,7 +78,7 @@ function love.draw()
 
         pontuacaoDraw()
 
-    elseif not telaInicial then
+    elseif telaGameOver then
         telaGameOverDraw()
     else
         telaInicialDraw()
@@ -86,7 +94,9 @@ function love.keypressed(key)
         backgroundSound:stop()
     elseif key == 'p' and pause then
         pause = false
-        backgroundSound:play()
+        if somAtivo then
+            backgroundSound:play()
+        end
     end
     if key == 'return' and gamerOver then
         gamerOver = false
@@ -96,7 +106,9 @@ function love.keypressed(key)
     if key == 'return' and telaInicial then
         telaInicial = false
         pause = false
-        backgroundSound:play()
+        if somAtivo then
+            backgroundSound:play()
+        end
     end
     if key == 'escape' then
         love.event.quit()
@@ -112,21 +124,36 @@ function love.mousepressed(mx,my,button)
         telaInicial = false
         pause = false
         gamerOver = false
-
-        backgroundSound:play()
+        if somAtivo then
+            backgroundSound:play()
+        end
     end
     if telaInicial and button == 1 and mx >= (larguraTela/2-configButton:getWidth()/2) and mx < (larguraTela/2 + configButton:getWidth()/2) and my >= (alturaTela/2 - configButton:getHeight()/2+200) and my < (alturaTela/2 + configButton:getHeight()/2 + 200) then
-        print("sim")
+        telaConfig = true
+        telaInicial = false
     end
-    if gamerOver and button == 1 and mx >= (larguraTela/2-restartButton:getWidth()/2) and mx < (larguraTela/2 + restartButton:getWidth()/2) and my >= (alturaTela/2 + 100) and my < (alturaTela/2 + restartButton:getHeight() + 100) then
+    if telaGameOver and button == 1 and mx >= (larguraTela/2-restartButton:getWidth()/2) and mx < (larguraTela/2 + restartButton:getWidth()/2) and my >= (alturaTela/2 + 100) and my < (alturaTela/2 + restartButton:getHeight() + 100) then
         gamerOver = false
+        telaGameOver = false
         pause = false
         pontos = 0
-        backgroundSound:play()
+        if somAtivo then
+            backgroundSound:play()
+        end
     end
-    if gamerOver and button == 1 and mx >= (larguraTela/2-backButton:getWidth()/2) and mx < (larguraTela/2 + backButton:getWidth()/2) and my >= (alturaTela/2 +300) and my < (alturaTela/2 + backButton:getHeight() + 300) then
+    if telaGameOver or telaConfig and button == 1 and mx >= (larguraTela/2-backButton:getWidth()/2) and mx < (larguraTela/2 + backButton:getWidth()/2) and my >= (alturaTela/2 +300) and my < (alturaTela/2 + backButton:getHeight() + 300) then
         telaInicial = true
+        telaConfig = false
         pause = true
+        if telaGameOver then
+            telaGameOver = false
+        end
+    end
+    if telaConfig and button == 1 and mx >= (larguraTela/2-150) and mx<larguraTela/2 and my >= alturaTela/2 and my < (alturaTela/2 + 100) then
+        somAtivo = true
+    end
+    if telaConfig and button == 1 and mx >= (larguraTela/2) and mx< (larguraTela/2+210) and my >= alturaTela/2 and my < (alturaTela/2 + 100) then
+        somAtivo = false
     end
 end
 

@@ -1,6 +1,5 @@
 
 function teleInicialLoad()
-    teleInicial = true
     startButton = love.graphics.newImage("imagens/StartButton.png")
     gameStartBackground = love.graphics.newImage("imagens/GameStartBackground.png")
     configButton = love.graphics.newImage("imagens/config.png")

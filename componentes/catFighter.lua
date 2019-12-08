@@ -92,7 +92,9 @@ function catAtaque(dt)
     for i, poder in ipairs(ataque) do
         for j, robot in ipairs(robots) do
             if checaColisao(poder.x, poder.y, 64, 64, robot.x +20, robot.y, 40, 100) then
-                explosao:play()
+                if somAtivo then
+                    explosao:play()
+                end
                 robotAtingido.x, robotAtingido.y = robot.x, robot.y - 20
                 robotAtingido.wait = true
                 table.remove( robots,j )
@@ -125,7 +127,9 @@ function catAtaque(dt)
 end
 
 function pular()
-    pulo:play()
+    if somAtivo then
+        pulo:play()
+    end
     catBody.body:applyForce(0,-60000)
 end
 

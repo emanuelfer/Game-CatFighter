@@ -56,7 +56,7 @@ end
 
 function andaRobot(dt)
     for i, robot in ipairs(robots) do
-        if love.keyboard.isDown("right") then
+        if love.keyboard.isDown("right") and catFighter.estaVivo then
             robot.x = robot.x - (velocidade+planoDeFundo.vel)*dt
         else
             robot.x = robot.x - (velocidade)*dt

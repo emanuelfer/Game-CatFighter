@@ -5,7 +5,9 @@ end
 function colisao(dt)
     for i, robot in ipairs(robots) do
         if (catFighter.estaVivo) and checaColisao(robot.x +20, robot.y, 40, 100, catBody.body:getX()-30, catBody.body:getY(), 50, 50)then
-            ohno:play()
+            if somAtivo then
+                ohno:play()
+            end
             catFighter.estaVivo = false
             vidas = vidas - 1
             robot.atacou = true
@@ -13,7 +15,9 @@ function colisao(dt)
             catFighter.wait = true
             break
         elseif not catFighter.estaVivo and robot.atacou then
-            fogo:play()
+            if somAtivo then
+                fogo:play()
+            end
             catDieAnimation:update(dt)
             fogoAnimation:update(dt)
             catFighter.waitTime = catFighter.waitTime + dt
@@ -23,8 +27,11 @@ function colisao(dt)
                 catFighter.wait = false
                 catFighter.waitTime = 0
                 if vidas < 0 then
+                    telaGameOver = true
                     backgroundSound:stop()
-                    gameOverSound:play()
+                    if somAtivo then
+                        gameOverSound:play()
+                    end
                     love.load()
                     gamerOver = true
                     pause = true
