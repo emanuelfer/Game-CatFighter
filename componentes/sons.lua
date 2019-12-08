@@ -1,5 +1,4 @@
 function sonsLoad(  )
-    somAtivo = true
     explosao = love.audio.newSource("sons/explosao.mp3", "static")
     pulo = love.audio.newSource("sons/pulo.mp3", "static")
     fogo = love.audio.newSource("sons/fogo.mp3", "static")
