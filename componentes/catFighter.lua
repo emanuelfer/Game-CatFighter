@@ -64,9 +64,11 @@ end
 function catMovimento(dt)
     if catFighter.estaVivo then
         if love.keyboard.isDown('right') then
+            --impede catfighter de passar do meio da tela
             if catBody.body:getX() < larguraTela/2 - 25 then
                 catBody.body:setX(catBody.body:getX() + planoDeFundo.vel*dt)
             end
+            --movimento do background
             planoDeFundo.x = planoDeFundo.x - planoDeFundo.vel*dt
             planoDeFundo.x2 = planoDeFundo.x2 - planoDeFundo.vel*dt
 
@@ -93,8 +95,10 @@ function catAtaque(dt)
         for j, robot in ipairs(robots) do
             if checaColisao(poder.x, poder.y, 64, 64, robot.x +20, robot.y, 40, 100) then
                 if somAtivo then
+                    explosao:stop()
                     explosao:play()
                 end
+                --posição do robô atingido para ocorrer a explosão
                 robotAtingido.x, robotAtingido.y = robot.x, robot.y - 20
                 robotAtingido.wait = true
                 table.remove( robots,j )
@@ -108,6 +112,7 @@ function catAtaque(dt)
             table.remove( ataque,i )
         end
     end
+    --animação de ataque do catfighter
     if catFighter.atacando then
         catFighter.waitTime = catFighter.waitTime + dt
         if catFighter.waitTime > 0.5 then
@@ -116,6 +121,7 @@ function catAtaque(dt)
             catFighter.atacando = false
         end
     end
+    --animação da explosão do robô
     if robotAtingido.wait then
         explosaoAnimation:update(dt)
         robotAtingido.waitTime = robotAtingido.waitTime + dt
@@ -136,7 +142,6 @@ end
 function lancaPoder()
     if #power > 0 then
         catFighter.atacando = true
-        wait = true
         power[1].x, power[1].y = catBody.body:getX(), catBody.body:getY()-20 
         table.insert( ataque,power[1] )
         table.remove( power,1 )

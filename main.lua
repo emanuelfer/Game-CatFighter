@@ -16,7 +16,6 @@ alturaTela = love.graphics.getHeight()
 pontos = 0
 telaInicial = true
 telaGameOver = false
-
 somAtivo = true
 
 function love.load()
@@ -52,13 +51,14 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.setFont(fonte)
     if telaConfig then
         telaConfigDraw()
-    elseif not telaGameOver and not telaInicial then
-
+    elseif telaInicial then
+        telaInicialDraw()
+    elseif telaGameOver then
+        telaGameOverDraw()
+    else
         fisicaDraw()
-
         backgroundDraw()
 
         if catFighter.estaVivo and not catFighter.atacando then
@@ -77,16 +77,11 @@ function love.draw()
         robotDraw()
 
         pontuacaoDraw()
-
-    elseif telaGameOver then
-        telaGameOverDraw()
-    else
-        telaInicialDraw()
     end
 end
 
 function love.keypressed(key)
-    if key == 'space' and catBody.body:getY() > alturaTela-chao.width and catFighter.estaVivo then
+    if key == 'space' and catBody.body:getY() > alturaTela-chao.height and catFighter.estaVivo then
         pular()
     end
     if key == 'p' and not pause then

@@ -22,6 +22,7 @@ function backgroundUpdate(dt)
 end
 
 function pontuacaoDraw()
+    love.graphics.setFont(fonte)
     love.graphics.print("Pontuacao:",30,30,0,1.5,1.5,0,2,0,0)
     love.graphics.print(pontos, 180,33,0,1.5,1.5,5,5,0,0)
     love.graphics.print("Poder:", 30, 60,0,1.5,1.5)
@@ -31,7 +32,7 @@ function pontuacaoDraw()
     for i=1, #power do
         love.graphics.rectangle("fill",125,65,i*(200/3),15)
     end
-    love.graphics.setColor(255,255,255)
+    love.graphics.setColor(1,1,1)
     love.graphics.print("Vidas: ",larguraTela/2,35,0,1.5,1.5)
     for i=1, vidas do
         love.graphics.draw(coracao,  (larguraTela/2 + 50) + i*40, 30)

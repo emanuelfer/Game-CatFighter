@@ -5,8 +5,8 @@ function fisicaLoad()
     --chao
     chao = {}
     chao.body = love.physics.newBody(mundo, 0, alturaTela, "static")
-    chao.width = alturaTela*0.15
-    chao.shape = love.physics.newRectangleShape(larguraTela*2,chao.width)
+    chao.height = alturaTela*0.15
+    chao.shape = love.physics.newRectangleShape(larguraTela*2,chao.height)
     chao.fixture = love.physics.newFixture(chao.body, chao.shape)
     --chao
 end

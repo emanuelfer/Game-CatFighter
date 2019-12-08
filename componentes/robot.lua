@@ -49,7 +49,7 @@ function criaRobot(dt)
     if tempoCriacaoRobot < 0 then
         tempoCriacaoRobot = delayRobot
         x,y = chao.body:getPosition()
-        novoRobot = {x = larguraTela, y = y-105-chao.width/2, imagem = robotImagem}
+        novoRobot = {x = larguraTela, y = y-105-chao.height/2, imagem = robotImagem}
         table.insert(robots,novoRobot)
     end
 end
