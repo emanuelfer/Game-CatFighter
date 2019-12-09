@@ -9,7 +9,7 @@ function catFighterLoad()
 
     catFighterImagem = love.graphics.newImage("imagens/cat.png")
     catGrid = anim.newGrid(50,50, catFighterImagem:getWidth(), catFighterImagem:getHeight())
-    catDieAnimation = anim.newAnimation(catGrid('7-3',4),0.1)
+    catDieAnimation = anim.newAnimation(catGrid('3-3',4),0.1)
     catAttackAnimation = anim.newAnimation(catGrid('1-6',2),0.05)
     catAnimation = anim.newAnimation(catGrid('4-8',1),0.05)
     catFighter = {
